@@ -1,0 +1,46 @@
+pipeline {
+    agent {label 'master'}
+    environment {
+        //GIT_PROJECT_ADDR="https://bitbucket.org/*****.git"
+        PROJECT_NAME="${JOB_NAME}"
+    }
+    stages {
+        stage('Source') {
+            steps {
+                echo 'This is a pullcode step'
+                git credentialsId: '407ddf94-4ede-4dc4-8ef9-4af1f9f0b90b', url: 'https://bitbucket.org/*****.git'
+            }
+        }
+        stage('Build Image') {
+            agent {
+                dockerfile {
+                 filename 'Dockerfile_dev'
+                 additionalBuildArgs '--build-arg version=1.0.0'
+                 dir "${workspace}"
+                 registryUrl 'https://registry.cn-shenzhen.aliyuncs.com/'
+                 registryCredentialsId 'cfc4795d-5364-4ad5-9fb0-16c339df1491'
+                }
+            }	
+            steps {
+                echo 'build success'
+            }
+        }
+    }
+    post {
+        cleanup {
+            /* clean up our workspace */
+            deleteDir()
+            /* clean up tmp directory */
+            dir("${workspace}@*") {
+                deleteDir()
+            }
+            /* clean up script directory */
+            dir("${workspace}@script") {
+                deleteDir()
+            }
+        }
+        always {
+            echo 'I will always say Hello again!'
+        }
+    }
+}
