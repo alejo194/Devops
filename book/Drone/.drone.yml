@@ -1,1 +1,30 @@
-##
+kind: pipeline
+type: docker
+name: projectname
+steps:
+- name: push
+  image: plugins/docker
+  settings:
+    insecure: true
+    dockerfile: Dockerfile_dev
+    repo: ****/projectname
+    registry: ****
+    tags:
+      - latest
+  when:
+    branch: master
+- name: push-image
+  image: plugins/docker
+  settings:
+    dockerfile: Dockerfile_dev
+    repo: username/projectname
+    use_cache: true
+    username:
+      from_secret: DOCKER_USER
+    password:
+      from_secret: DOCKER_PASSWORD
+    tags:
+      - latest
+  when:
+    event: push
+    branch: master
